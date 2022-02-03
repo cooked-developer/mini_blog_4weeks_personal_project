@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <meta charset="UTF-8">
+    <title>회원가입 페이지</title>
+
+    <script th:inline="javascript">
+
+        // 로그인 회원의 닉네임을 global로 저장
+        let loginUsername = [[${loginUsername}]];
+
+        $(document).ready(function () {
+            // 이미 로그인 된 사용자가 접속 시, 화면 띄우지 않고 메인으로 돌려보내기
+            if (loginUsername != null) {
+                $('#login-form').hide();
+                alert("이미 로그인 되어있습니다.")
+                window.location.href="/";
+            }
+        })
+
+        //회원가입 버튼 눌렀을 때 기능
+        function signUp() {
+            // 입력값 저장
+            let username = $("#input-username").val();
+            let password = $("#input-password").val();
+            let password2 = $("#input-password2").val();
+            let email = $("#input-email").val();
+            let data = {
+                'username': username,
+                'password': password,
+                'password2': password2,
+                'email': email
+            };
+            console.log(username, password, password2, email);
+            $.ajax({
+                type: "POST",
+                url: "/user/signup",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    // 모든 항목이 유효성 검사를 통과했을 때
+                    if (response["result"] === "Success"){
+                        $("#id_msg").text("사용 가능한 아이디입니다.");
+                        $("#id_msg").css({"color": "green"});
+                        $("#pw_msg").text("사용 가능한 비밀번호입니다.");
+                        $("#pw_msg").css({"color": "green"});
+                        $("#pw2_msg").text("비밀번호가 일치합니다.");
+                        $("#pw2_msg").css({"color": "green"});
+                        // 윗 부분에서 모두 '초록 글씨'가 활성화 되도록 약간의 시간을 기다려줌
+                        setTimeout(() => alert("회원가입에 성공했습니다."), 250);
+                        setTimeout(() => window.location.href="/user/login", 250);
+                        // 유효성 검사를 통과하지 못했을 때,
+                    } else {
+                        if(response["idCheck"] !== "") {
+                            $("#id_msg").text(response["idCheck"]);
+                            $("#id_msg").css({"color": "red"});
+                        } else {
+                            $("#id_msg").text("사용 가능한 아이디입니다.");
+                            $("#id_msg").css({"color": "green"});
+                        }
+                        if(response["pwCheck"] !== "") {
+                            $("#pw_msg").text(response["pwCheck"]);
+                            $("#pw_msg").css({"color": "red"});
+                        } else {
+                            $("#pw_msg").text("사용 가능한 비밀번호입니다.");
+                            $("#pw_msg").css({"color": "green"});
+                        }
+                        if(response["pwCheck2"] !== "") {
+                            $("#pw2_msg").text(response["pwCheck2"]);
+                            $("#pw2_msg").css({"color": "red"});
+                        } else {
+                            $("#pw2_msg").text("비밀번호가 일치합니다.");
+                            $("#pw2_msg").css({"color": "green"});
+                        }
+                    }
+                }
+            })
+        }
+
+    </script>
+</head>
+<body>
+<div id="login-form">
+    <div id="login-title">Signup My Board</div>
+    <div class="login-id-label">닉네임</div>
+    <input id="input-username" type="text" placeholder="닉네임을 입력해주세요." class="login-input-box">
+    <p id="help-id1" class=""><span id="id_msg">3자 이상의 영문 및 숫자로 구성되어야 합니다.</span>
+    </p>
+
+    <div id="password" class="login-id-label">비밀번호</div>
+    <input id="input-password" type="password" placeholder="비밀번호를 입력해주세요." class="login-input-box">
+    <p id="help-password1" class=""><span id="pw_msg">4자 이상의 영문 및 숫자로 구성되며, 닉네임을 포함할 수 없습니다.</span>
+    </p>
+
+    <div id="password-check" class="login-id-label">비밀번호 확인</div>
+    <input id="input-password2" type="password" placeholder="비밀번호를 한번 더 입력" class="login-input-box">
+    <p id="help-password21" class=""><span id="pw2_msg">비밀번호를 한번 더 입력해주세요.</span>
+    </p>
+
+    <div class="login-id-label">E-mail</div>
+    <input id="input-email" type="text" placeholder="메일주소 입력" class="login-input-box">
+    <button id="login-id-submit" onclick="signUp()">회원 가입</button>
+</div>
+</body>
+</html>
